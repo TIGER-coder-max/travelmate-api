@@ -130,8 +130,4 @@ CREATE INDEX IF NOT EXISTS idx_vendors_user      ON vendors(user_id);
 -- ─── SAMPLE DATA ──────────────────────────────────────────────
 -- Insert a sample vendor and listings so your API returns real data
 
-INSERT INTO users (first_name, last_name, email, password_hash, role)
-VALUES ('Admin', 'TravelMate', 'admin@travelmate.np', '$2a$12$placeholder', 'admin')
-ON CONFLICT DO NOTHING;
-
-SELECT 'Schema created successfully! ✅' AS status;
+SELECT 'Schema created successfully!' AS status;

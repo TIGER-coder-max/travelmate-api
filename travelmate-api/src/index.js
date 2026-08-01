@@ -5,6 +5,8 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const session = require('express-session');
 const passport = require('passport');
+const { query } = require('./config/db');
+const { initializeDatabase } = require('./config/migrate');
 
 const app = express();
 
@@ -57,7 +59,14 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/health', (req, res) => res.json({ status: 'healthy' }));
+app.get('/health', async (req, res) => {
+  try {
+    await query('SELECT 1');
+    res.json({ status: 'healthy', database: 'connected' });
+  } catch (error) {
+    res.status(503).json({ status: 'unhealthy', database: 'unavailable' });
+  }
+});
 
 // ─── 404 handler ──────────────────────────────────────────────
 app.use((req, res) => {
@@ -74,8 +83,18 @@ app.use((err, req, res, next) => {
 
 // ─── Start server ─────────────────────────────────────────────
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`\n🏔️  TravelMate Nepal API`);
-  console.log(`🚀  Running on port ${PORT}`);
-  console.log(`🌍  Environment: ${process.env.NODE_ENV || 'development'}\n`);
-});
+async function start() {
+  try {
+    await initializeDatabase();
+    app.listen(PORT, () => {
+      console.log(`\n🏔️  TravelMate Nepal API`);
+      console.log(`🚀  Running on port ${PORT}`);
+      console.log(`🌍  Environment: ${process.env.NODE_ENV || 'development'}\n`);
+    });
+  } catch (error) {
+    console.error('Database initialization failed:', error.message);
+    process.exit(1);
+  }
+}
+
+start();
