@@ -48,6 +48,7 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/esewa',    require('./routes/esewa'));
 app.use('/api/reviews',  require('./routes/reviews'));
 app.use('/api/vendors',  require('./routes/vendors'));
+app.use('/api/proposals', require('./routes/proposals'));
 
 // ─── Health check ─────────────────────────────────────────────
 app.get('/', (req, res) => {

@@ -100,6 +100,32 @@ CREATE TABLE IF NOT EXISTS payments (
   created_at       TIMESTAMP DEFAULT NOW()
 );
 
+-- PROPOSALS — inquiry-first offers that must be accepted before payment
+CREATE TABLE IF NOT EXISTS proposals (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id             UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vendor_id           UUID REFERENCES vendors(id) ON DELETE SET NULL,
+  listing_id          UUID REFERENCES listings(id) ON DELETE SET NULL,
+  trip_slug           VARCHAR(160),
+  title               VARCHAR(255) NOT NULL,
+  preferred_date      DATE,
+  travelers           INT NOT NULL DEFAULT 1,
+  package_preference  VARCHAR(50),
+  customer_message    TEXT,
+  itinerary           TEXT,
+  inclusions          TEXT[] DEFAULT '{}',
+  exclusions          TEXT[] DEFAULT '{}',
+  cancellation_terms  TEXT,
+  total_amount        DECIMAL(10,2),
+  currency            VARCHAR(3) DEFAULT 'USD',
+  valid_until         DATE,
+  status              VARCHAR(20) NOT NULL DEFAULT 'requested'
+                      CHECK (status IN ('requested','draft','sent','accepted','declined','expired')),
+  responded_at        TIMESTAMP,
+  created_at          TIMESTAMP DEFAULT NOW(),
+  updated_at          TIMESTAMP DEFAULT NOW()
+);
+
 -- ─── REVIEWS ──────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS reviews (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -126,6 +152,9 @@ CREATE INDEX IF NOT EXISTS idx_bookings_vendor   ON bookings(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_status   ON bookings(status);
 CREATE INDEX IF NOT EXISTS idx_reviews_listing   ON reviews(listing_id);
 CREATE INDEX IF NOT EXISTS idx_vendors_user      ON vendors(user_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_user    ON proposals(user_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_vendor  ON proposals(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_status  ON proposals(status);
 
 -- ─── SAMPLE DATA ──────────────────────────────────────────────
 -- Insert a sample vendor and listings so your API returns real data
